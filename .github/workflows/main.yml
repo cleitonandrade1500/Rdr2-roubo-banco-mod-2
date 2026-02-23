@@ -5,22 +5,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Instalar Compilador
+      - name: Configurar Ambiente (Correção de Erro)
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang lld llvm make
+          sudo apt-get install -y clang lld llvm make gcc-multilib g++-multilib
 
-      - name: Compilar SPRX
-        run: make
+      - name: Executar Compilação SPRX
+        run: |
+          make clean || true
+          make
         env:
           CC: clang
           CXX: clang++
 
-      - name: Upload
+      - name: Upload do Mod Pronto
         uses: actions/upload-artifact@v4
         with:
-          name: Mod_John_RDR2
+          name: Mod_RDR2_John_2026
           path: "*.sprx"
