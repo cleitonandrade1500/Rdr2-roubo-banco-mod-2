@@ -1,21 +1,18 @@
-# Configurações de Compilação PS4
+# Configurações para PS4 CUSA03041
 TARGET = RDR2_JohnMod.sprx
 OBJS = main.o
 
-CC = clang
 CXX = clang++
-LD = ld.lld
-
-CFLAGS = -target x86_64-pc-freebsd-elf -fPIC -O2 -fno-exceptions
-LDFLAGS = -target x86_64-pc-freebsd-elf -shared -fuse-ld=lld
+CXXFLAGS = -target x86_64-pc-freebsd-elf -fPIC -O2 -fno-exceptions -fno-rtti -fno-use-cxa-atexit -c
+LDFLAGS = -target x86_64-pc-freebsd-elf -shared -fuse-ld=lld -nostdlib
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) $(LDFLAGS) -o $@ $(OBJS)
+	ld.lld $(LDFLAGS) -o $@ $(OBJS)
 
-%.o: %.cpp
-	$(CXX) $(CFLAGS) -c -o $@ $<
+main.o: main.cpp
+	$(CXX) $(CXXFLAGS) -o $@ main.cpp
 
 clean:
 	rm -f $(TARGET) $(OBJS)
