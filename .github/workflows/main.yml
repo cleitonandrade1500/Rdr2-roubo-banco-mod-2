@@ -8,10 +8,10 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Configurar Ambiente (Correção de Erro)
+      - name: Configurar Ambiente
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang lld llvm make gcc-multilib g++-multilib
+          sudo apt-get install -y clang lld llvm make gcc-multilib
 
       - name: Executar Compilação SPRX
         run: |
@@ -21,8 +21,8 @@ jobs:
           CC: clang
           CXX: clang++
 
-      - name: Upload do Mod Pronto
+      - name: Upload do Mod
         uses: actions/upload-artifact@v4
         with:
-          name: Mod_RDR2_John_2026
+          name: Mod_John_RDR2_PS4
           path: "*.sprx"
