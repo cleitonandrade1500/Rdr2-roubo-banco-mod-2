@@ -1,19 +1,14 @@
-# Makefile RDR2 PS4 1.32 - John Bodyguard Mod
 TARGET = ModJohn.sprx
-OBJS = src/main.o
+OBJS = source/main.o
 
 CXX = clang++
-# Flags para gerar um binário completo de PS4
-CXXFLAGS = -target x86_64-pc-freebsd-elf -fPIC -O2 -fno-exceptions -fno-rtti
-LDFLAGS = -target x86_64-pc-freebsd-elf -shared -fuse-ld=lld
+CXXFLAGS = -target x86_64-pc-freebsd-elf -fPIC -O2 -Iinclude -fno-exceptions -fno-rtti
+LDFLAGS = -target x86_64-pc-freebsd-elf -shared -fuse-ld=lld -nostdlib
 
 all: $(TARGET)
-
 $(TARGET): $(OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $(OBJS)
-
-src/%.o: src/%.cpp
+source/%.o: source/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
-
 clean:
-	rm -f $(TARGET) src/*.o
+	rm -f $(TARGET) source/*.o
