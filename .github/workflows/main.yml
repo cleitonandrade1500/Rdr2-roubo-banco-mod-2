@@ -5,25 +5,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout seu código
+      - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Baixar Base Havana (Automático)
+      - name: Baixar Natives e Headers (Automático)
         run: |
+          # Puxa as bibliotecas necessárias para o mod não ficar com 3KB
           git clone https://github.com base
-          cp -r base/include .
-          cp -r base/src/* source/ || cp -r base/source/* source/ || true
+          cp -r base/include . || true
+          sudo apt-get update && sudo apt-get install -y clang lld llvm make gcc-multilib
 
-      - name: Configurar Ambiente PS4
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y clang lld llvm make gcc-multilib
-
-      - name: Compilar SPRX
+      - name: Compilar Mod SPRX
         run: make
-        
+
       - name: Upload do Mod Pronto
         uses: actions/upload-artifact@v4
         with:
-          name: Mod_John_RDR2_CUSA03041
+          name: Mod_John_RDR2_v132
           path: "*.sprx"
