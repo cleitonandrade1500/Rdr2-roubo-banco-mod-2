@@ -1,56 +1,49 @@
+#include "natives.h"
+#include "script.h"
 #include <stdint.h>
-#include <stddef.h>
-
-// --- MOTOR DE NATIVES RDR2 v1.32 CUSA03041 ---
-#define INVOKE(h, T, ...) ((T(*)(...))h)(__VA_ARGS__)
 
 // Variáveis de Controle
-int johnPed = 0;
-int timerBotao = 0;
+Ped johnPed = 0;
+int timerSegurando = 0;
 
-void AtualizarIA(int john, int player) {
-    // 1. Lógica de Montaria: John sobe no cavalo se você montar
-    if (INVOKE(0x4600003E, bool, player) && !INVOKE(0x4600003E, bool, john)) {
-        int cavalo = INVOKE(0xE7E11B8E, int, player);
-        if (cavalo != 0) INVOKE(0x92DB31E0, void, john, cavalo, -1, -1, 2.0f, 1, 0, 0);
+void AtualizarIAJohn() {
+    Ped player = PLAYER::PLAYER_PED_ID();
+    // 1. IA DE MONTARIA: John sobe no cavalo se você montar
+    if (PED::IS_PED_ON_MOUNT(player) && !PED::IS_PED_ON_MOUNT(johnPed)) {
+        Ped cavalo = PED::GET_MOUNT(player);
+        if (ENTITY::DOES_ENTITY_EXIST(cavalo)) {
+            TASK::TASK_MOUNT_ANIMAL(johnPed, cavalo, -1, -1, 2.0f, 1, 0, 0);
+        }
     }
-    // 2. Lógica de Saque: Fora de combate, John saqueia corpos próximos
-    if (!INVOKE(0x8434317BF5E90C05, bool, john) && !INVOKE(0x4600003E, bool, player)) {
-        int corpo = INVOKE(0x14E56BC5B50A07C5, int, john, 10.0f);
-        if (corpo != 0) INVOKE(0xE13262B50A07C5, void, john, corpo);
+    // 2. IA DE SAQUE: John saqueia corpos se não houver combate
+    if (!PED::IS_PED_IN_COMBAT(johnPed, 0) && !PED::IS_PED_ON_MOUNT(player)) {
+        Ped corpo = PED::GET_CLOSEST_PED(johnPed, 10.0f, 1, 0, 0, 0);
+        if (ENTITY::DOES_ENTITY_EXIST(corpo) && PED::IS_PED_DEAD_OR_DYING(corpo, true)) {
+            TASK::TASK_LOOT_PED(johnPed, corpo);
+        }
     }
 }
 
-// Ponto de entrada oficial para GoldHEN 2.4 / FW 12.00
 extern "C" __attribute__((visibility("default"))) int module_start(size_t argc, const void* argv) {
     while (true) {
-        // Comando: L2 (0x07CEABE9) + SETA CIMA (0x911CB91D) por 2 segundos
-        if (INVOKE(0x0E0313B0, bool, 0, 0x07CEABE9) && INVOKE(0x0E0313B0, bool, 0, 0x911CB91D)) {
-            if (++timerBotao > 150) { 
-                uint32_t johnHash = 0xD8093262; // PLAYER_THREE (John)
+        // Comando: L2 + SETA CIMA por 2 segundos
+        if (PAD::IS_CONTROL_PRESSED(0, 0x07CEABE9) && PAD::IS_CONTROL_PRESSED(0, 0x911CB91D)) {
+            if (++timerSegurando > 150) {
+                Hash johnHash = MISC::GET_HASH_KEY("PLAYER_THREE");
+                STREAMING::REQUEST_MODEL(johnHash, false);
+                while (!STREAMING::HAS_MODEL_LOADED(johnHash)) WAIT(0);
 
-                // Request e Spawn
-                INVOKE(0x125FD99564264624, void, johnHash, false);
-                int pPed = INVOKE(0x2190E381D3930472, int);
-                johnPed = INVOKE(0xD49F340656402010, int, johnHash, 0, 0, 0, 0.0f, false, false, false, false);
+                Vector3 pos = ENTITY::GET_ENTITY_COORDS(PLAYER::PLAYER_PED_ID(), true, true);
+                johnPed = PED::CREATE_PED(johnHash, pos.x + 2.0f, pos.y, pos.z, 0.0f, false, false, false, false);
                 
-                // Configurar como Guarda-costas
-                int group = INVOKE(0x256B38647614A69D, int, pPed);
-                INVOKE(0x10113106, void, johnPed, group);
-                INVOKE(0x67C546AC, void, johnPed, true); // Invencível
-                
-                timerBotao = 0;
+                PED::SET_PED_AS_GROUP_MEMBER(johnPed, PLAYER::GET_PLAYER_GROUP(PLAYER::PLAYER_ID()));
+                ENTITY::SET_ENTITY_INVINCIBLE(johnPed, true);
+                timerSegurando = 0;
             }
-        } else { timerBotao = 0; }
+        } else timerSegurando = 0;
 
-        if (johnPed != 0) {
-            AtualizarIA(johnPed, INVOKE(0x2190E381D3930472, int));
-        }
-
-        // Delay para estabilidade na FW 12.00
-        for(volatile int i=0; i<500000; i++); 
+        if (ENTITY::DOES_ENTITY_EXIST(johnPed)) AtualizarIAJohn();
+        WAIT(0);
     }
     return 0;
 }
-
-extern "C" int module_stop(size_t argc, const void* argv) { return 0; }
