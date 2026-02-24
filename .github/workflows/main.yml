@@ -1,0 +1,23 @@
+name: Compilar Mod RDR2 PS4 2026
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Ambiente
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld llvm make gcc-multilib
+
+      - name: Executar Compilação
+        run: make
+
+      - name: Upload do Mod
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mod_John_RDR2_CUSA03041
+          path: "*.sprx"
