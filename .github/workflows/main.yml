@@ -10,7 +10,7 @@ jobs:
 
       - name: Baixar Natives e Headers (Automático)
         run: |
-          # Puxa as bibliotecas necessárias para o mod não ficar com 3KB
+          # Clona o repositório correto para pegar as bibliotecas include
           git clone https://github.com base
           cp -r base/include . || true
           sudo apt-get update && sudo apt-get install -y clang lld llvm make gcc-multilib
