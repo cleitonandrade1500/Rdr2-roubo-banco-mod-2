@@ -1,22 +1,28 @@
-name: Compilar Mod RDR2 PS4 2026
+name: Compilar Mod John Automático 2026
 on: [push, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout do código
+      - name: Checkout seu código
         uses: actions/checkout@v4
 
-      - name: Configurar Ambiente
+      - name: Baixar Base Havana (Automático)
+        run: |
+          git clone https://github.com base
+          cp -r base/include .
+          cp -r base/src/* source/ || cp -r base/source/* source/ || true
+
+      - name: Configurar Ambiente PS4
         run: |
           sudo apt-get update
           sudo apt-get install -y clang lld llvm make gcc-multilib
 
-      - name: Executar Compilação
+      - name: Compilar SPRX
         run: make
-
-      - name: Upload do Mod
+        
+      - name: Upload do Mod Pronto
         uses: actions/upload-artifact@v4
         with:
           name: Mod_John_RDR2_CUSA03041
