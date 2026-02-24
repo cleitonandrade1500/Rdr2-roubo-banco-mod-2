@@ -1,11 +1,9 @@
-# Makefile Corrigido para Havana (RDR2 PS4 1.32)
-TARGET = RDR2-SP-Base.sprx
-OBJS = src/main.o src/script.o
+TARGET = JohnMod.sprx
+OBJS = src/main.o
 
-# Compilador e Bibliotecas
 CXX = clang++
-CXXFLAGS = -target x86_64-pc-freebsd-elf -fPIC -O2 -Iinclude -fno-exceptions -fno-rtti
-LDFLAGS = -target x86_64-pc-freebsd-elf -shared -fuse-ld=lld
+CXXFLAGS = -target x86_64-pc-freebsd-elf -fPIC -O2 -fno-exceptions -fno-rtti -fno-use-cxa-atexit
+LDFLAGS = -target x86_64-pc-freebsd-elf -shared -fuse-ld=lld -nostdlib
 
 all: $(TARGET)
 
